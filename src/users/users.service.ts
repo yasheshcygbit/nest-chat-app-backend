@@ -24,6 +24,7 @@ export class UsersService {
           'connectionRequestsReceived',
           'fromUserConnections',
           'toUserConnections',
+          'userChannels'
         ]
       });
       // const respFind = await this.userRepo.createQueryBuilder('user')

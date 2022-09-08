@@ -1,7 +1,8 @@
 import { Exclude } from "class-transformer";
 import { ConnectionRequest } from "src/connection-request/connection-request.entity";
 import { Connection } from "src/connection/connection.entity";
-import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { UserChannel } from "src/user-channel/user-channel.entity";
+import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class User {
@@ -27,8 +28,7 @@ export class User {
   @OneToMany(() => Connection, connection => connection.toUser)
   toUserConnections: Connection[]
 
-  // @ManyToMany(() => Connection, connection => connection.users)
-  // @JoinTable()
-  // connections: Connection[]
+  @OneToMany(() => UserChannel, userChannel => userChannel.user)
+  userChannels: UserChannel[]
 
 }

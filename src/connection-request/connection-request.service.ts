@@ -1,7 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Channel } from 'src/channels/channel.entity';
 import { AuthUserDto } from 'src/common/decorators/dto/auth-user.dto';
 import { Connection } from 'src/connection/connection.entity';
+import { UserChannel } from 'src/user-channel/user-channel.entity';
 import { Repository } from 'typeorm';
 import { ConnectionRequest } from './connection-request.entity';
 import { AcceptConnectionRequestDto } from './dto/accept-connection-request.dto';
@@ -14,6 +16,12 @@ export class ConnectionRequestService {
     private connectionRequestRepo: Repository<ConnectionRequest>,
     @InjectRepository(Connection)
     private connectionRepo: Repository<Connection>,
+
+    @InjectRepository(Channel)
+    private channelRepo: Repository<Channel>,
+
+    @InjectRepository(UserChannel)
+    private userChannelRepo: Repository<UserChannel>,
   ) {}
 
   async sendConnectionRequest(user: AuthUserDto, sendConnectionRequestDto: SendConnectionRequestDto) {
@@ -49,7 +57,8 @@ export class ConnectionRequestService {
           {
             id: acceptConnectionRequestDto.id,
           },
-        ]
+        ],
+        relations: ['sender', 'receiver']
       })
       if (respFind) {
         respFind.isAccepted = true;
@@ -61,10 +70,32 @@ export class ConnectionRequestService {
             fromUserId: respFind.senderId,
             toUserId: respFind.receiverId,
           })
-          return await this.connectionRepo.save(respCreate);
-        } else {
-          return isConnectionAlreadyEstablished;
+          const respConnectionCreate = await this.connectionRepo.save(respCreate);
+          console.log('[CREATE_CHANNEL respConnectionCreate]', respConnectionCreate);
         }
+
+        // now create channel and also add this channel and user in userchannel table
+
+        const respChannelCreate = this.channelRepo.create({
+          name: `Channel Between Sender ${respFind.sender.email} and Receiver ${respFind.receiver.email}`
+        });
+        const respChannelSave = await this.channelRepo.save(respChannelCreate);
+        console.log('[CREATE_CHANNEL respChannelSave]', respChannelSave);
+
+        // now create user channel
+        const respUserChannelCreateFirst = this.userChannelRepo.create({
+          channel: respChannelCreate,
+          userId: respFind.sender.id
+        })
+        const respUserChannelSaveFirst = await this.userChannelRepo.save(respUserChannelCreateFirst);
+        console.log('[CREATE_CHANNEL respUserChannelSaveFirst]', respUserChannelSaveFirst);
+        
+        const respUserChannelCreateSecond = this.userChannelRepo.create({
+          channel: respChannelCreate,
+          userId: respFind.receiver.id
+        })
+        const respUserChannelSaveSecond = await this.userChannelRepo.save(respUserChannelCreateSecond);
+        console.log('[CREATE_CHANNEL respUserChannelSaveSecond]', respUserChannelSaveSecond);
       } else {
         throw 'REQUEST_DOESNT_EXISTS';
       }      

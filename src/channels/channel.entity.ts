@@ -1,5 +1,6 @@
+import { UserChannel } from "src/user-channel/user-channel.entity";
 import { User } from "src/users/user.entity";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Channel {
@@ -8,6 +9,7 @@ export class Channel {
 
   @Column()
   name: string;
-
-  users: User[]
+  
+  @OneToMany(() => UserChannel, userChannel => userChannel.channelId)
+  userChannels: UserChannel[]
 }

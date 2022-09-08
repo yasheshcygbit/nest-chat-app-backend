@@ -15,6 +15,8 @@ import { ConnectionRequestModule } from './connection-request/connection-request
 import { ConnectionRequest } from './connection-request/connection-request.entity';
 import { ConnectionModule } from './connection/connection.module';
 import { Connection } from './connection/connection.entity';
+import { UserChannel } from './user-channel/user-channel.entity';
+import { Channel } from './channels/channel.entity';
 
 const isProductionMode = process.env.NODE_ENV === ENV_CONST.ENV_MODE_PRODUCTION;
 
@@ -59,7 +61,9 @@ console.log('envFilePath', envFilePath);
           entities: [
             User,
             ConnectionRequest,
-            Connection
+            Connection,
+            UserChannel,
+            Channel
           ],
           synchronize: true,
         }
